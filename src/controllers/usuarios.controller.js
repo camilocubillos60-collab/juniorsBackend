@@ -81,7 +81,7 @@ const loginUsuario = async (req, res) => {
                 email: usuario.email,
                 rol: usuario.rol,
             },
-            "newProyect_creationSoftware_2026",
+            process.env.JWT_SECRET,
             { expiresIn: "2h" }
         );
 

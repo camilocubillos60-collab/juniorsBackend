@@ -1,14 +1,18 @@
 const jwt = require("jsonwebtoken");
 
 const verificarToken = (req, res, next) => {
-    const token = req.headers["authorization"];
+    const authHeader = req.headers["authorization"];
 
-    if (!token) {
+    if (!authHeader) {
         return res.status(401).json({ error: "Token requerido" });
     }
 
+    const token = authHeader.startsWith("Bearer ")
+        ? authHeader.split(" ")[1]
+        : authHeader;
+
     try {
-        const decoded = jwt.verify(token, "secreto_juniors");
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
         req.usuario = decoded;
         next();
     } catch (error) {
