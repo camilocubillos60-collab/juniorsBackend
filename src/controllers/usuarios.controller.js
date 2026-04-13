@@ -14,6 +14,8 @@ const obtenerUsuarios = async (req, res) => {
 
 const crearUsuario = async (req, res) => {
     const { nombre, apellido, email, password, telefono, rol } = req.body;
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(password, saltRounds)
 
     try {
         const usuarioExistente = await db.query(
@@ -27,22 +29,12 @@ const crearUsuario = async (req, res) => {
             });
         }
 
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        const sql = `
-            INSERT INTO usuarios (nombre, apellido, email, password, telefono, rol)
-            VALUES ($1, $2, $3, $4, $5, $6)
-            RETURNING id_usuario
-        `;
-
-        const result = await db.query(sql, [
-            nombre,
-            apellido,
-            email,
-            hashedPassword,
-            telefono,
-            rol,
-        ]);
+        const result = await db.query(
+            `INSERT INTO usuarios (nombre, apellido, email, password, telefono, rol)
+             VALUES ($1, $2, $3, $4, $5, $6)
+             RETURNING id_usuario`,
+            [nombre, apellido, email, hashedPassword, telefono, rol]
+        );
 
         res.status(201).json({
             mensaje: "Usuario creado correctamente",
@@ -69,10 +61,10 @@ const loginUsuario = async (req, res) => {
 
         const usuario = result.rows[0];
 
-        const passwordValido = await bcrypt.compare(password, usuario.password);
+        const coincide = await bcrypt.compare(password, usuario.password);
 
-        if (!passwordValido) {
-            return res.status(401).json({ error: "Contraseña incorrecta" });
+        if (!coincide) {
+            return res.status(401).json({ error: "Credenciales inválidas" });
         }
 
         const token = jwt.sign(

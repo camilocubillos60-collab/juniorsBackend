@@ -12,4 +12,12 @@ const pool = new Pool({
     },
 });
 
+pool.connect()
+    .then(() => {
+        console.log("Conectado a PostgreSQL / Supabase");
+    })
+    .catch((err) => {
+        console.error("Error de conexión a PostgreSQL:", err.message);
+    });
+
 module.exports = pool;

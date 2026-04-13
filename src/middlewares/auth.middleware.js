@@ -7,17 +7,20 @@ const verificarToken = (req, res, next) => {
         return res.status(401).json({ error: "Token requerido" });
     }
 
-    const token = authHeader.startsWith("Bearer ")
-        ? authHeader.split(" ")[1]
-        : authHeader;
+    if (!authHeader.startWith("Bearer ")) {
+        return res.status(401).json({ error: "Formato de token inválido" });
+    }
+
+    const token = authHeader.split(" ")[1];
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         req.usuario = decoded;
         next();
     } catch (error) {
-        return res.status(401).json({ error: "Token inválido" });
+        return res.status(401).json({ error: "Token inválido o expirado" });
     }
+
 };
 
 module.exports = verificarToken;
